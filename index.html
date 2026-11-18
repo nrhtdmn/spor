@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827"><meta name="description" content="Kişisel şınav, mekik, barfiks ve koşu antrenman takipçisi">
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="style.css">
+<title>Güçlenme Planım</title>
+</head>
+<body>
+<header><div><small>ANTRENMAN TAKİPÇİSİ</small><h1>Güçlenme Planım</h1></div><button id="install" hidden>Yükle</button></header>
+<main>
+<section class="panel">
+  <div class="row"><div><span class="muted">PROGRAM GÜNÜ</span><h2 id="dayTitle">1. Gün</h2></div><span class="pill" id="dayType">Kuvvet</span></div>
+  <p id="dayNote" class="muted"></p>
+  <div class="progress"><div id="progressBar"></div></div><p id="progressText" class="muted small"></p>
+  <div id="tasks"></div>
+  <div class="actions"><button class="secondary" id="prevDay">Önceki</button><button id="nextDay">Sonraki gün</button></div>
+</section>
+<section class="panel">
+<h2>Set zamanlayıcısı</h2>
+<div class="timer" id="timer">01:30</div>
+<div class="muted small" id="timerLabel">Set arası dinlenme</div>
+<div class="actions"><button id="startTimer">Başlat</button><button class="secondary" id="pauseTimer">Duraklat</button><button class="secondary" id="resetTimer">Sıfırla</button></div>
+</section>
+<section class="panel">
+<h2>Gelişim kaydı</h2>
+<p class="muted small">Antrenman sonunda yaptığın tekrarları ve koşu süreni kaydet. Veriler bu cihazda saklanır.</p>
+<div class="grid">
+<label>Şınav (toplam tekrar)<input id="logPush" type="number" min="0" inputmode="numeric"></label>
+<label>Mekik (toplam tekrar)<input id="logSit" type="number" min="0" inputmode="numeric"></label>
+<label>Barfiks (toplam tekrar)<input id="logPull" type="number" min="0" inputmode="numeric"></label>
+<label>Koşu 3000 m (dk:ss)<input id="logRun" placeholder="18:00"></label>
+</div>
+<label>Not / nasıl hissettin?<textarea id="logNote" rows="2" placeholder="Örn. Rahattı, son sette zorlandım..."></textarea></label>
+<button id="saveLog">Bugünün kaydını sakla</button>
+<p id="saveStatus" class="muted small"></p>
+<div id="history"></div>
+</section>
+<section class="panel safety">
+<h2>Başlangıç değerlerin ve hedeflerin</h2>
+<div class="stats"><div><b>15</b><span>Şınav şu an</span></div><div><b>15</b><span>Mekik şu an</span></div><div><b>0</b><span>Barfiks şu an</span></div><div><b>18:00</b><span>3000 m şu an</span></div></div>
+<p><strong>Hedef:</strong> 30 şınav · 35 mekik · 6 barfiks · 3000 m 14:50</p>
+<p class="muted small">Bu hedefler aşamalı ilerleme içindir; süre garantisi değildir. Ağrı, baş dönmesi, göğüs ağrısı veya olağandışı nefes darlığında antrenmanı bırak ve bir yetişkine/sağlık uzmanına haber ver.</p>
+</section>
+</main>
+<footer>İlerleme için düzenlilik + toparlanma. Her gün maksimum deneme yapma.</footer>
+<script src="app.js"></script>
+</body></html>
