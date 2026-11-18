@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="Günlük şınav, mekik, barfiks ve 3000m koşu antrenman takip uygulaması" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Güçlenme Planım</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #22c55e;
+      --orange: #f97316;
+      --red: #ef4444;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+      line-height: 1.4;
+    }
+    header {
+      background: var(--card);
+      padding: 16px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    header h1 { font-size: 1.25rem; font-weight: 700; }
+    header p { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    nav {
+      display: flex;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 57px;
+      z-index: 40;
+      overflow-x: auto;
+    }
+    nav button {
+      flex: 1;
+      min-width: 80px;
+      padding: 12px 8px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+    }
+    nav button.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    main { padding: 16px; max-width: 480px; margin: 0 auto; }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h3 { font-size: 0.95rem; margin: 12px 0 8px; color: var(--muted); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      width: 100%;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-primary { background: var(--accent); color: #0f172a; }
+    .btn-green { background: var(--green); color: #052e16; }
+    .btn-orange { background: var(--orange); color: #431407; }
+    .btn-red { background: var(--red); color: white; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-sm { padding: 8px 12px; font-size: 0.85rem; width: auto; }
+    .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+    .btn-row .btn { flex: 1; }
+    .timer-display {
+      font-size: 3rem;
+      font-weight: 700;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      margin: 12px 0;
+      color: var(--accent);
+    }
+    .timer-display.rest { color: var(--orange); }
+    .set-info {
+      text-align: center;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .set-info span { color: var(--accent); font-weight: 700; }
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 1rem;
+      margin-top: 4px;
+    }
+    label { font-size: 0.85rem; color: var(--muted); display: block; margin-top: 12px; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row > div { flex: 1; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .stat-box {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .stat-box .value { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+    .stat-box .label { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #1e3a5f;
+      color: var(--accent);
+    }
+    .hidden { display: none !important; }
+    .chart-container { position: relative; height: 220px; margin-top: 12px; }
+    #run-map {
+      width: 100%;
+      height: 200px;
+      background: var(--bg);
+      border-radius: 10px;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      border: 1px dashed var(--border);
+    }
+    .motivation {
+      text-align: center;
+      font-style: italic;
+      color: var(--muted);
+      margin: 8px 0;
+      font-size: 0.9rem;
+    }
+    .footer-note {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 24px;
+      padding: 0 16px;
+    }
+    .rest-settings {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.85rem;
+    }
+    .rest-settings input { width: 70px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Güçlenme Planım</h1>
+    <p id="today-date"></p>
+  </header>
+
+  <nav>
+    <button class="active" data-tab="workout">Antrenman</button>
+    <button data-tab="max">Max Test</button>
+    <button data-tab="run">Koşu</button>
+    <button data-tab="progress">İlerleme</button>
+    <button data-tab="history">Geçmiş</button>
+  </nav>
+
+  <main>
+    <!-- ANTREnMAN TAB -->
+    <section id="tab-workout">
+      <div class="card">
+        <h2>💪 Bugünün Antrenmanı</h2>
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:12px;">
+          Her gün aynı akış. Set sayısını ve tekrarı kendin belirle. Bilimsel dinlenme süresi kullan.
+        </p>
+        <div class="rest-settings">
+          <label style="margin:0;">Dinlenme (sn):</label>
+          <input type="number" id="rest-seconds" value="60" min="30" max="180" />
+          <button class="btn btn-sm btn-outline" onclick="saveRestSeconds()">Kaydet</button>
+        </div>
+      </div>
+
+      <!-- Şınav -->
+      <div class="card" id="ex-push">
+        <h2>🏋️ Şınav</h2>
+        <div class="set-info">Set <span id="push-set">1</span></div>
+        <div class="timer-display" id="push-timer">00:00</div>
+        <div class="motivation" id="push-msg">Hazırsan başla</div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="push-start" onclick="startSet('push')">Seti Başlat</button>
+          <button class="btn btn-green hidden" id="push-finish" onclick="finishSet('push')">Seti Bitir</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-outline btn-sm" onclick="logWorkoutReps('push')">Tekrar Kaydet</button>
+          <button class="btn btn-outline btn-sm" onclick="resetExercise('push')">Sıfırla</button>
+        </div>
+        <div id="push-log" style="margin-top:12px;font-size:0.85rem;color:var(--muted);"></div>
+      </div>
+
+      <!-- Mekik -->
+      <div class="card" id="ex-sit">
+        <h2>🔄 Mekik</h2>
+        <div class="set-info">Set <span id="sit-set">1</span></div>
+        <div class="timer-display" id="sit-timer">00:00</div>
+        <div class="motivation" id="sit-msg">Hazırsan başla</div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="sit-start" onclick="startSet('sit')">Seti Başlat</button>
+          <button class="btn btn-green hidden" id="sit-finish" onclick="finishSet('sit')">Seti Bitir</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-outline btn-sm" onclick="logWorkoutReps('sit')">Tekrar Kaydet</button>
+          <button class="btn btn-outline btn-sm" onclick="resetExercise('sit')">Sıfırla</button>
+        </div>
+        <div id="sit-log" style="margin-top:12px;font-size:0.85rem;color:var(--muted);"></div>
+      </div>
+
+      <!-- Barfiks -->
+      <div class="card" id="ex-pull">
+        <h2>🆙 Barfiks</h2>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:8px;">
+          Bar yoksa asılı kalma süresi tut veya negatif barfiks yap.
+        </p>
+        <div class="set-info">Set <span id="pull-set">1</span></div>
+        <div class="timer-display" id="pull-timer">00:00</div>
+        <div class="motivation" id="pull-msg">Hazırsan başla</div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="pull-start" onclick="startSet('pull')">Seti Başlat</button>
+          <button class="btn btn-green hidden" id="pull-finish" onclick="finishSet('pull')">Seti Bitir</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-outline btn-sm" onclick="logWorkoutReps('pull')">Tekrar Kaydet</button>
+          <button class="btn btn-outline btn-sm" onclick="resetExercise('pull')">Sıfırla</button>
+        </div>
+        <div id="pull-log" style="margin-top:12px;font-size:0.85rem;color:var(--muted);"></div>
+      </div>
+
+      <div class="card">
+        <button class="btn btn-green" onclick="completeWorkoutDay()">Günü Tamamla & Kaydet</button>
+      </div>
+    </section>
+
+    <!-- MAX TEST TAB -->
+    <section id="tab-max" class="hidden">
+      <div class="card">
+        <h2>🔥 Tek Seferlik Max Test</h2>
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:12px;">
+          Günün en iyi performansını buraya kaydet. Grafiklerde kullanılır.
+        </p>
+        <label>Şınav (tekrar)</label>
+        <input type="number" id="max-push" min="0" placeholder="Örn: 15" />
+        <label>Mekik (tekrar)</label>
+        <input type="number" id="max-sit" min="0" placeholder="Örn: 15" />
+        <label>Barfiks (tekrar)</label>
+        <input type="number" id="max-pull" min="0" placeholder="Örn: 0" />
+        <label>3000 m Koşu Süresi (dakika:saniye)</label>
+        <div class="form-row">
+          <div>
+            <input type="number" id="max-run-min" min="0" placeholder="Dk" />
+          </div>
+          <div>
+            <input type="number" id="max-run-sec" min="0" max="59" placeholder="Sn" />
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="saveMaxTest()">Max Testi Kaydet</button>
+      </div>
+      <div class="card">
+        <h3>Son Max Kayıtlar</h3>
+        <div id="max-history"></div>
+      </div>
+    </section>
+
+    <!-- KOŞU TAB -->
+    <section id="tab-run" class="hidden">
+      <div class="card">
+        <h2>🏃 3000 m Koşu</h2>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="value" id="run-distance">0.00</div>
+            <div class="label">Tamamlanan (km)</div>
+          </div>
+          <div class="stat-box">
+            <div class="value" id="run-remaining">3.00</div>
+            <div class="label">Kalan (km)</div>
+          </div>
+          <div class="stat-box">
+            <div class="value" id="run-time">00:00</div>
+            <div class="label">Süre</div>
+          </div>
+          <div class="stat-box">
+            <div class="value" id="run-pace">--:--</div>
+            <div class="label">Tempo (/km)</div>
+          </div>
+        </div>
+        <div class="motivation" id="run-msg">Konum izni ver ve başla</div>
+        <div id="run-map">Harita burada görünecek (GPS açıkken)</div>
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="btn btn-primary" id="run-start-btn" onclick="startRun()">Koşuya Başla</button>
+          <button class="btn btn-orange hidden" id="run-pause-btn" onclick="pauseRun()">Duraklat</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-green hidden" id="run-resume-btn" onclick="resumeRun()">Devam Et</button>
+          <button class="btn btn-red hidden" id="run-stop-btn" onclick="stopRun()">Bitir & Kaydet</button>
+        </div>
+        <button class="btn btn-outline" style="margin-top:12px;" id="gpx-btn" onclick="downloadGPX()" disabled>GPX İndir</button>
+      </div>
+    </section>
+
+    <!-- İLERLEME TAB -->
+    <section id="tab-progress" class="hidden">
+      <div class="card">
+        <h2>📈 Şınav Gelişimi</h2>
+        <div class="chart-container"><canvas id="chart-push"></canvas></div>
+      </div>
+      <div class="card">
+        <h2>📈 Mekik Gelişimi</h2>
+        <div class="chart-container"><canvas id="chart-sit"></canvas></div>
+      </div>
+      <div class="card">
+        <h2>📈 Barfiks Gelişimi</h2>
+        <div class="chart-container"><canvas id="chart-pull"></canvas></div>
+      </div>
+      <div class="card">
+        <h2>📈 3000 m Süre Gelişimi</h2>
+        <p style="font-size:0.8rem;color:var(--muted);">Aşağı inen çizgi = gelişim (süre azalıyor)</p>
+        <div class="chart-container"><canvas id="chart-run"></canvas></div>
+      </div>
+    </section>
+
+    <!-- GEÇMİŞ TAB -->
+    <section id="tab-history" class="hidden">
+      <div class="card">
+        <h2>📅 Antrenman Geçmişi</h2>
+        <div id="workout-history"></div>
+      </div>
+      <div class="card">
+        <h2>🏃 Koşu Geçmişi</h2>
+        <div id="run-history"></div>
+      </div>
+      <div class="card">
+        <button class="btn btn-outline" onclick="exportAllData()">Tüm Verileri JSON Olarak İndir</button>
+        <button class="btn btn-red" style="margin-top:8px;" onclick="clearAllData()">Tüm Verileri Sil</button>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      Veriler sadece bu cihazda saklanır. Ana ekrana ekleyerek PWA olarak kullanabilirsin.<br>
+      Hedef: 30 şınav • 35 mekik • 6 barfiks • 14:50 / 3000m
+    </p>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(console.error);
+    }
+  </script>
+</body>
+</html>
